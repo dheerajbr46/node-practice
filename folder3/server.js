@@ -6,8 +6,14 @@ const corsOptions = require('./config/corsOptions')
 const { logger } = require('./middleware/logEvents');
 const errorHandler = require('./middleware/errorHandler');
 const PORT = process.env.PORT || 3500;
+const verifyJwt = require('./middleware/verifyJwt');
+const { verify } = require('crypto');
+const cookieParser = require('cookie-parser');
+const credentials = require('./middleware/credentials');
 
 app.use(logger);
+
+app.use(credentials);
 
 app.use(cors(corsOptions));
 
@@ -15,11 +21,17 @@ app.use(express.urlencoded({ extended: false }));
 
 app.use(express.json());
 
+app.use(cookieParser());
+
 app.use(express.static(path.join(__dirname, '/public')));
 
 app.use('/', require('./routes/root'));
 app.use('/register', require('./routes/register'));
 app.use('/auth', require('./routes/auth'));
+app.use('/refresh', require('./routes/refresh'));
+app.use('/logout', require('./routes/logout'));
+
+app.use(verifyJwt);
 app.use('/employees', require('./routes/api/employees'));
 
 // app.get(new RegExp('^/*'), (req, res) => {
