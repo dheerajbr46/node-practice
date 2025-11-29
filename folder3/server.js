@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
 const path = require('path');
@@ -10,6 +11,11 @@ const verifyJwt = require('./middleware/verifyJwt');
 const { verify } = require('crypto');
 const cookieParser = require('cookie-parser');
 const credentials = require('./middleware/credentials');
+const mongoose = require('mongoose');
+const connectDb = require('./config/dbConn');
+
+// Connect to MongoDB
+connectDb();
 
 app.use(logger);
 
@@ -51,4 +57,7 @@ app.all(new RegExp('^/*'), (req, res) => {
 
 app.use(errorHandler);
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+mongoose.connection.once('open', () => {
+    console.log('Connected to MongoDB');
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+});
